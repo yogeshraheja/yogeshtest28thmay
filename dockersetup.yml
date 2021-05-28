@@ -1,0 +1,40 @@
+---
+-
+  name: This playbook is for DockerSetup
+  hosts: ansibleworker
+
+  tasks:
+  - name: Removing old packages
+    apt: 
+      name: "{{ item }}"
+      state: absent
+    loop: [ 'docker', 'docker-engine', 'docker.io', 'containerd', 'runc' ]
+
+  - name: Installing pre-req packages for Docker
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'gnupg', 'lsb-release' ]
+
+  - name: Adding Docker GPG Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+ 
+  - name: Adding Docker Repositories
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+ 
+  - name: Installing Docker Packages
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop: [ 'docker-ce', 'docker-ce-cli', 'containerd.io']
+
+  - name: Restarting Docker
+    service:
+      name: docker
+      state: restarted
+
